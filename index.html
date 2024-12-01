@@ -1,0 +1,118 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"
+    >
+  <script>
+    window.onload = () => {
+        const url_input = document.getElementById('url');
+        url_input.addEventListener('input', colour_box);
+        url_input.addEventListener('change', () => {document.getElementById('submit').disabled = false});
+    }
+
+    function colour_box() {
+        const url_input = document.getElementById('url');
+        const url = url_input.value;
+        if(!isValidHttpUrl(url)) {
+            url_input.classList.add('is-danger');
+        } else {
+            url_input.classList.remove('is-danger');
+        }
+    }
+
+    function shrink_url() {
+        const url_input = document.getElementById('url');
+        const url = url_input.value;
+        const submit = document.getElementById('submit');
+        const output = document.getElementById('output');
+        const output_text = document.getElementById('output-text');
+
+        if(!isValidHttpUrl(url)) {
+            alert("Invalid Url");
+            return;
+        }
+
+        const current_url = window.location.href;
+
+        fetch(current_url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'text/plain-text',
+        },
+        body: (url+"\0")
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.url) {
+                console.log('Shortened URL:' + data.url);
+                console.log('Long URL: ' + url);
+                output.style.display = "";
+                output_text.value = window.location.href + data.url;
+                submit.disabled = true;
+
+            } else {
+                console.log('Failed to shorten URL');
+            }
+            console.log(data);
+        })
+        .catch(error => {
+            console.error('Error shortening URL:', error);
+        });
+        }
+
+
+
+        function isValidHttpUrl(url) {
+            const pattern = /^(https:\/\/)([A-Za-z0-9-]+\.)+[A-Za-z]{2,}(\/[A-Za-z0-9\-._~:\/?#[\]@!$&'()*+,;=%]*)?(#[\w-]+)?$/;
+            return pattern.test(url);
+        }
+  </script>
+</head>
+<body>
+
+<section class="section">
+    <div class="container is-fluid has-text-centered">
+        <div class="notification is-primary">
+            <h1 class="title">Shrink Link</h1>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="card has-text-centered">
+        <div class="container is-fluid has-text-centered">
+        <br>
+            <form class="form">
+                <div class="field">
+                    <label class="label">Url To Shrink</label>
+                    <div class="control">
+                      <input class="input" type="text" id="url" placeholder="Enter URL...">
+                    </div>
+                </div>
+
+                <div class="field is-centered">
+                    <div class="control">
+                      <button class="button is-link" type="button" onclick="shrink_url()" id="submit">Submit</button>
+                    </div>                
+                </div>
+            </form>
+            <br>
+            <br>
+
+                <div class="field" style="display: none;" id="output">
+                    <label class="label">Output</label>
+                    <div class="control">
+                      <input class="input" type="text" placeholder="Short URL" readonly id="output-text">
+                    </div>
+                </div>
+        </div>
+        <br>
+    </div>
+</section>
+
+</body>
+</html>
